@@ -8,7 +8,7 @@
 namespace etcd_cpp {
 
 using boost::asio::ip::tcp;
-Client::Client(std::string& host, int port) {
+Client::Client(std::string host, int port) {
     _host = host;
     _port = port;
     // Get a list of endpoints corresponding to the server name.
@@ -83,7 +83,7 @@ void Client::_CheckResponse(boost::asio::streambuf& response) {
     {
         std::stringstream ss;
         ss <<"Response returned with status code " << status_code;
-        throw EtcdCppException(ss.str(), EEC_InvalidKey);
+        throw EtcdCppException(ss.str());
     }
 
     // Read the response headers, which are terminated by a blank line.
@@ -109,9 +109,13 @@ picojson::object Client::_ParseString(std::string& jsonstring) {
         throw EtcdCppException("body is not json object");
     }
 
-    // dump json object
-    std::cout << "---- dump input ----" << std::endl;
-    std::cout << v << std::endl;
-    return v.get<picojson::object>();
+    picojson::object obj = v.get<picojson::object>();
+    if (obj.find("errorCode") != obj.end()) {
+        int errorcode = obj["errorCode"].get<double>();
+        throw EtcdCppException(obj["message"].get<std::string>(),static_cast<EtcdCppErrorCode>(errorcode));
+    }
+    if (obj["node"].get<picojson::object>()["dir"].get<bool>()) { //isdir?
+    }
+    return obj;
 }
 } // namespace etcd_cpp

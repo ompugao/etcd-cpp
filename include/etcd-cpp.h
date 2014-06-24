@@ -25,7 +25,7 @@ namespace etcd_cpp {
 class Client {
 
 public:
-    Client(std::string& host, int port);
+    Client(std::string host = std::string("localhost"), int port = 4001);
     virtual ~Client();
     picojson::object Get(std::string& key);
 private:
