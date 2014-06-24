@@ -1,0 +1,52 @@
+/** \file config.h
+    \brief Defines etcd-cpp installation-specific information.
+*/
+#ifndef ETCD_CPP_DEFINITIONS_H
+#define ETCD_CPP_DEFINITIONS_H
+
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(_MSC_VER)
+  #define ETCD_CPP_HELPER_DLL_IMPORT __declspec(dllimport)
+  #define ETCD_CPP_HELPER_DLL_EXPORT __declspec(dllexport)
+  #define ETCD_CPP_HELPER_DLL_LOCAL
+#else
+  #if __GNUC__ >= 4
+    #define ETCD_CPP_HELPER_DLL_IMPORT __attribute__ ((visibility("default")))
+    #define ETCD_CPP_HELPER_DLL_EXPORT __attribute__ ((visibility("default")))
+    #define ETCD_CPP_HELPER_DLL_LOCAL  __attribute__ ((visibility("hidden")))
+  #else
+    #define ETCD_CPP_HELPER_DLL_IMPORT
+    #define ETCD_CPP_HELPER_DLL_EXPORT
+    #define ETCD_CPP_HELPER_DLL_LOCAL
+  #endif
+#endif
+
+// Now we use the generic helper definitions above to define ETCD_CPP_API and ETCD_CPP_LOCAL.
+// ETCD_CPP_API is used for the public API symbols. It either DLL imports or DLL exports (or does nothing for static build)
+// ETCD_CPP_LOCAL is used for non-api symbols.
+#if defined(ETCD_CPP_DLL) || defined(ETCD_CPP_CORE_DLL) // defined if OpenRAVE is compiled as a DLL
+  #ifdef ETCD_CPP_DLL_EXPORTS // defined if we are building the OpenRAVE DLL (instead of using it)
+    #define ETCD_CPP_API ETCD_CPP_HELPER_DLL_EXPORT
+  #else
+    #define ETCD_CPP_API ETCD_CPP_HELPER_DLL_IMPORT
+  #endif // ETCD_CPP_DLL_EXPORTS
+  #define ETCD_CPP_LOCAL ETCD_CPP_HELPER_DLL_LOCAL
+#else // ETCD_CPP_DLL is not defined: this means OpenRAVE is a static lib.
+  #define ETCD_CPP_API
+  #define ETCD_CPP_LOCAL
+#endif // ETCD_CPP_DLL
+
+#define ETCD_CPP_VERSION_MAJOR @ETCD_CPP_VERSION_MAJOR@
+#define ETCD_CPP_VERSION_MINOR @ETCD_CPP_VERSION_MINOR@
+#define ETCD_CPP_VERSION_PATCH @ETCD_CPP_VERSION_PATCH@
+#define ETCD_CPP_VERSION_COMBINED(major, minor, patch) (((major) << 16) | ((minor) << 8) | (patch))
+#define ETCD_CPP_VERSION ETCD_CPP_VERSION_COMBINED(ETCD_CPP_VERSION_MAJOR, ETCD_CPP_VERSION_MINOR, ETCD_CPP_VERSION_PATCH)
+#define ETCD_CPP_VERSION_EXTRACT_MAJOR(version) (((version)>>16)&0xff)
+#define ETCD_CPP_VERSION_EXTRACT_MINOR(version) (((version)>>8)&0xff)
+#define ETCD_CPP_VERSION_EXTRACT_PATCH(version) (((version))&0xff)
+#define ETCD_CPP_VERSION_STRING "@ETCD_CPP_VERSION_MAJOR@.@ETCD_CPP_VERSION_MINOR@.@ETCD_CPP_VERSION_PATCH@"
+#define ETCD_CPP_VERSION_STRING_FORMAT(version) boost::str(boost::format("%s.%s.%s")%(ETCD_CPP_VERSION_EXTRACT_MAJOR(version))%(ETCD_CPP_VERSION_EXTRACT_MINOR(version))%(ETCD_CPP_VERSION_EXTRACT_PATCH(version)))
+
+#define ETCD_CPP_VERSION_GE(major1, minor1, patch1, major2, minor2, patch2) (ETCD_CPP_VERSION_COMBINED(major1, minor1, patch1) >= ETCD_CPP_VERSION_COMBINED(major2, minor2, patch2))
+#define ETCD_CPP_VERSION_MINIMUM(major, minor, patch) ETCD_CPP_VERSION_GE(ETCD_CPP_VERSION_MAJOR, ETCD_CPP_VERSION_MINOR, ETCD_CPP_VERSION_PATCH, major, minor, patch)
+
+#endif
