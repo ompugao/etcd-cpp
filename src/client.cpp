@@ -83,7 +83,7 @@ void Client::_CheckResponse(boost::asio::streambuf& response) {
     {
         std::stringstream ss;
         ss <<"Response returned with status code " << status_code;
-        throw EtcdCppException(ss.str());
+        throw EtcdCppException(ss.str(), EEC_InvalidKey);
     }
 
     // Read the response headers, which are terminated by a blank line.
