@@ -17,10 +17,9 @@ int main(int argc, char* argv[])
     std::string key = std::string(argv[3]);
 
     etcd_cpp::Client client(host, port);
-    picojson::object obj = client.Get(key);
-
-    for (picojson::object::const_iterator i = obj.begin(); i != obj.end(); ++i) {
-        std::cout << i->first << "  " << i->second << std::endl;
+    picojson::value val;
+    if (client.Get(key,val)) {
+        std::cout << val << std::endl;
     }
     return 0;
 }

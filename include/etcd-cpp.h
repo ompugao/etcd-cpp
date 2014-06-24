@@ -27,10 +27,11 @@ class Client {
 public:
     Client(std::string host = std::string("localhost"), int port = 4001);
     virtual ~Client();
-    picojson::object Get(std::string& key);
+    ///< brief return true if it is value, return false if it is dir
+    bool Get(std::string& key,picojson::value& val);
 private:
     void _CheckResponse(boost::asio::streambuf& response);
-    picojson::object _ParseString(std::string& jsonstring);
+    bool _ParseString(std::string& jsonstring, picojson::value& val);
 
     std::string _host;
     int _port;
