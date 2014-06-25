@@ -32,7 +32,7 @@ Node Client::Get(std::string& key) {
     // allow us to treat all data up until the EOF as the content.
     boost::asio::streambuf request;
     std::ostream request_stream(&request);
-    request_stream << "GET " << key << " HTTP/1.0\r\n";
+    request_stream << "GET /v2/keys" << key << " HTTP/1.0\r\n";
     request_stream << "Host: " << _host << "\r\n";
     request_stream << "Accept: */*\r\n";
     request_stream << "Connection: close\r\n\r\n";
@@ -57,6 +57,7 @@ Node Client::Get(std::string& key) {
         throw boost::system::system_error(error);
     }
     std::string jsonstring = jsonss.str();
+    //std::cout << jsonstring << std::endl;
     picojson::object obj;
     _ParseString(jsonstring, obj);
     return Node(obj);
@@ -81,11 +82,13 @@ void Client::_CheckResponse(boost::asio::streambuf& response) {
         std::cerr << "Invalid response\n";
         throw EtcdCppException("Invalid response");
     }
+    /*
+     * errorCode is checked inside _ParseString
+     */
     if (status_code != 200)
     {
-        std::stringstream ss;
-        ss <<"Response returned with status code " << status_code;
-        throw EtcdCppException(ss.str());
+        EtcdCppErrorCode errorcode = static_cast<EtcdCppErrorCode>(status_code);
+        throw EtcdCppException(GetErrorCodeString(errorcode),errorcode);
     }
 
     // Read the response headers, which are terminated by a blank line.
@@ -112,9 +115,9 @@ void Client::_ParseString(std::string& jsonstring, picojson::object& obj) {
     }
 
     picojson::object responseobj = v.get<picojson::object>();
-    if (obj.find("errorCode") != obj.end()) {
-        int errorcode = obj["errorCode"].get<double>();
-        throw EtcdCppException(obj["message"].get<std::string>(),static_cast<EtcdCppErrorCode>(errorcode));
+    if (responseobj.find("errorCode") != responseobj.end()) {
+        int errorcode = responseobj["errorCode"].get<double>();
+        throw EtcdCppException(responseobj["message"].get<std::string>(),static_cast<EtcdCppErrorCode>(errorcode));
     }
     obj = responseobj["node"].get<picojson::object>();
 }

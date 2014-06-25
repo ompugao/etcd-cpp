@@ -44,7 +44,7 @@ inline const char* GetErrorCodeString(EtcdCppErrorCode error)
     case EEC_EcodeEventIndexCleared: return "The event in requested index is outdated and cleared";
     }
     // should throw an exception?
-    return "";
+    return boost::lexical_cast<std::string>(error).c_str();
 }
 
 class ETCD_CPP_API EtcdCppException : public std::exception
