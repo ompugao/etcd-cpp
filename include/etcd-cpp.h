@@ -22,16 +22,67 @@
 #include "picojson.h"
 
 namespace etcd_cpp {
+class Node {
+public:
+    Node(picojson::object& obj) : _obj(obj)
+    {
+    }
+    std::string key(){
+        if (_obj.find("key") != _obj.end()) {
+            return _obj["key"].get<std::string>();
+        }
+        throw EtcdCppException(GetErrorCodeString(EEC_EcodeKeyNotFound), EEC_EcodeKeyNotFound);
+    }
+    std::string value(){
+        if (dir()) {
+            throw EtcdCppException(GetErrorCodeString(EEC_EcodeNotFile), EEC_EcodeNotFile);
+        }
+        if (_obj.find("value") != _obj.end()) {
+            return _obj["value"].get<std::string>();
+        }
+        return "";
+    }
+    bool dir(){
+        if (_obj.find("dir") != _obj.end()
+                && _obj["dir"].get<bool>()) {
+            return true;
+        }
+        return false;
+    }
+    int createdIndex(){
+        if (_obj.find("createdIndex") != _obj.end()) {
+            return (int)_obj["createdIndex"].get<double>();
+        }
+        throw EtcdCppException("no createdIndex");
+    }
+    int modifiedIndex(){
+        if (_obj.find("modifiedIndex") != _obj.end()) {
+            return (int)_obj["modifiedIndex"].get<double>();
+        }
+        throw EtcdCppException("no modifiedIndex");
+    }
+    void children(std::vector<Node>& nodes) {
+        if (!dir()) {
+            throw EtcdCppException(GetErrorCodeString(EEC_EcodeNotDir), EEC_EcodeNotDir);
+        }
+        picojson::array nodesjson = _obj["nodes"].get<picojson::array>();
+        for (picojson::array::iterator itr = nodesjson.begin(); itr != nodesjson.end(); itr++) {
+            nodes.push_back(Node((*itr).get<picojson::object>()));
+        }
+    }
+private:
+    picojson::object _obj;
+};
 class Client {
 
 public:
     Client(std::string host = std::string("localhost"), int port = 4001);
     virtual ~Client();
     ///< brief return true if it is value, return false if it is dir
-    bool Get(std::string& key,picojson::value& val);
+    Node Get(std::string& key);
 private:
     void _CheckResponse(boost::asio::streambuf& response);
-    bool _ParseString(std::string& jsonstring, picojson::value& val);
+    void _ParseString(std::string& jsonstring, picojson::object& obj);
 
     std::string _host;
     int _port;

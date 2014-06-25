@@ -17,9 +17,18 @@ int main(int argc, char* argv[])
     std::string key = std::string(argv[3]);
 
     etcd_cpp::Client client(host, port);
-    picojson::value val;
-    if (client.Get(key,val)) {
-        std::cout << val << std::endl;
+    etcd_cpp::Node node = client.Get(key);
+    //check 
+    if (!node.dir()) {
+        std::cout << node.value() << std::endl;
+    } else {
+        std::vector<etcd_cpp::Node> nodes;
+        node.children(nodes);
+        for(std::vector<etcd_cpp::Node>::iterator itr = nodes.begin(); itr != nodes.end(); itr++) {
+            if (!itr->dir()) {
+                std::cout << itr->key() << " " << itr->value() << std::endl;
+            }
+        }
     }
     return 0;
 }

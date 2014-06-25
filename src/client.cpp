@@ -26,7 +26,7 @@ Client::~Client(){
     _socket.reset();
 }
 
- bool Client::Get(std::string& key, picojson::value& val) {
+Node Client::Get(std::string& key) {
     // Form the request. We specify the "Connection: close" header so that the
     // server will close the socket after transmitting the response. This will
     // allow us to treat all data up until the EOF as the content.
@@ -57,7 +57,9 @@ Client::~Client(){
         throw boost::system::system_error(error);
     }
     std::string jsonstring = jsonss.str();
-    return _ParseString(jsonstring, val);
+    picojson::object obj;
+    _ParseString(jsonstring, obj);
+    return Node(obj);
 }
 
 void Client::_CheckResponse(boost::asio::streambuf& response) {
@@ -97,7 +99,7 @@ void Client::_CheckResponse(boost::asio::streambuf& response) {
     //std::cerr << "\n";
 }
 
-bool Client::_ParseString(std::string& jsonstring, picojson::value& val) {
+void Client::_ParseString(std::string& jsonstring, picojson::object& obj) {
     picojson::value v;
     std::string err;
     picojson::parse(v, jsonstring.begin(), jsonstring.end(), &err);
@@ -109,16 +111,11 @@ bool Client::_ParseString(std::string& jsonstring, picojson::value& val) {
         throw EtcdCppException("body is not json object");
     }
 
-    picojson::object obj = v.get<picojson::object>();
+    picojson::object responseobj = v.get<picojson::object>();
     if (obj.find("errorCode") != obj.end()) {
         int errorcode = obj["errorCode"].get<double>();
         throw EtcdCppException(obj["message"].get<std::string>(),static_cast<EtcdCppErrorCode>(errorcode));
     }
-    if (obj["node"].get<picojson::object>().find("dir") != obj["node"].get<picojson::object>().end()
-            && obj["node"].get<picojson::object>()["dir"].get<bool>()) { //isdir?
-        return false;
-    }
-    val = obj["node"].get<picojson::object>()["value"];
-    return true;
+    obj = responseobj["node"].get<picojson::object>();
 }
 } // namespace etcd_cpp
