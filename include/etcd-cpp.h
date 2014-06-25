@@ -78,16 +78,19 @@ class Client {
 public:
     Client(std::string host = std::string("localhost"), int port = 4001);
     virtual ~Client();
-    ///< brief return true if it is value, return false if it is dir
     Node Get(std::string& key);
+    Node Set(std::string& key, std::string& value);
 private:
-    void _CheckResponse(boost::asio::streambuf& response);
+    void _ReconnectSocket();
+    void _CheckResponseHeader(boost::asio::streambuf& response);
+    void _ReadResponseBody(boost::asio::streambuf& response, std::iostream& stream);
     void _ParseString(std::string& jsonstring, picojson::object& obj);
 
     std::string _host;
     int _port;
     boost::asio::io_service _io_service;
     boost::shared_ptr<boost::asio::ip::tcp::socket> _socket;
+    boost::asio::ip::tcp::resolver::iterator _endpoint_iterator;
 };
 
 } // namespace etcd_cpp

@@ -30,6 +30,24 @@ int main(int argc, char* argv[])
             }
         }
     }
+
+    std::string value = "testvalue2";
+    etcd_cpp::Node res = client.Set(key,value);
+    node = client.Get(key);
+    //check 
+    if (!node.dir()) {
+        std::cout << node.value() << std::endl;
+    } else {
+        std::vector<etcd_cpp::Node> nodes;
+        node.children(nodes);
+        for(std::vector<etcd_cpp::Node>::iterator itr = nodes.begin(); itr != nodes.end(); itr++) {
+            if (!itr->dir()) {
+                std::cout << itr->key() << " " << itr->value() << std::endl;
+            }
+        }
+    }
+    value = "testvalue1";
+    res = client.Set(key,value);
     return 0;
 }
 
