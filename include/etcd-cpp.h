@@ -78,7 +78,7 @@ class Client {
 public:
     Client(std::string host = std::string("localhost"), int port = 4001);
     virtual ~Client();
-    Node Get(std::string& key);
+    Node Get(std::string& key, bool wait = false);
     Node Set(std::string& key, std::string& value);
 private:
     void _ReconnectSocket();

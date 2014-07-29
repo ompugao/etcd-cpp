@@ -34,13 +34,17 @@ Client::~Client(){
     _socket.reset();
 }
 
-Node Client::Get(std::string& key) {
+Node Client::Get(std::string& key, bool wait) {
     // Form the request. We specify the "Connection: close" header so that the
     // server will close the socket after transmitting the response. This will
     // allow us to treat all data up until the EOF as the content.
     boost::asio::streambuf request;
     std::ostream request_stream(&request);
-    request_stream << "GET /v2/keys" << key << " HTTP/1.0\r\n";
+    request_stream << "GET /v2/keys" << key;
+    if (wait) {
+        request_stream << "?wait=true";
+    }
+    request_stream << " HTTP/1.0\r\n";
     request_stream << "Host: " << _host << "\r\n";
     request_stream << "Accept: */*\r\n";
     request_stream << "Connection: Close\r\n\r\n";
