@@ -55,7 +55,7 @@ endif()
 set( EtcdCpp_LINK_FLAGS "" )
 set( EtcdCpp_INCLUDE_DIRS "${EtcdCpp_ROOT_DIR}/include")
 set( EtcdCpp_LIBRARY_DIRS "${EtcdCpp_ROOT_DIR}/lib@LIB_SUFFIX@")
-set( EtcdCpp_LIBRARIES etcdcpp${EtcdCpp_LIBRARY_SUFFIX})
+set( EtcdCpp_LIBRARIES etcd-cpp${EtcdCpp_LIBRARY_SUFFIX})
 
 set( EtcdCpp_Boost_VERSION "@Boost_MAJOR_VERSION@.@Boost_MINOR_VERSION@")
 

@@ -243,7 +243,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/picojson)
   #set(ETCD_CPP_INCLUDE_LOCAL_DIRS ${ETCD_CPP_INCLUDE_LOCAL_DIRS} ${libzmq_INCLUDE_DIRS})
 #endif()
 
-file(GLOB etcd_cpp_header_files ${CMAKE_CURRENT_SOURCE_DIR}/include/etcd-cpp/*.h)
+file(GLOB etcd_cpp_header_files ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h ${CMAKE_CURRENT_SOURCE_DIR}/picojson/picojson.h)
 install(FILES ${etcd_cpp_header_files} ${CMAKE_CURRENT_BINARY_DIR}/include/etcd-cpp/config.h DESTINATION include/etcd-cpp)
 
 add_subdirectory(src)
